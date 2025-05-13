@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 
-import utils
+
 from repo_manager import Repository
 from user import User
 
@@ -71,21 +71,21 @@ def run():
 
 
     action=u.access()
-    print(action)
+
 
     if action== "first access":
         print_menu_no_previous_projects()
         answer = get_user_choice({'1', '2'})
         if answer=='1':
             repository.create_new_repo()
-            u.get_git_remote_url(repository.get_last_repo_path(), repository.get_repo_name())
+
             menu(repository)
         elif answer=='2':
             u.user_exit()
 
     else:
         repository.open_latest_project()
-        u.get_git_remote_url(repository.get_last_repo_path(),repository.get_repo_name())
+
         menu(repository)
 
 if __name__ == "__main__":

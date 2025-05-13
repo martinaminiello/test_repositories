@@ -26,8 +26,7 @@ class Repository:
     def __init__(self, user):
         self.user = user
 
-    def get_repo_name(self ):
-        """ reads last created repo  name from json """
+    def get_last_repo_name(self ): #reads last used repo from json
         if os.path.exists(FILE_JSON_NAME):
             with open(FILE_JSON_NAME, "r") as file:
                 records = json.load(file)
@@ -36,22 +35,25 @@ class Repository:
                         return record["last"]
 
 
-    def get_last_repo_url(self):
-        repo_name = self.get_repo_name()
+    def get_repo_path_from_name(self, name): #builds path from name
+        path=self.user.user_dir + '/' + name
+        return path
+
+    def get_last_repo_url(self): # last repo used
+        repo_name = self.get_last_repo_name()
         url_repo = self.user.user_url + repo_name
         return url_repo
 
 
     def get_last_repo_path(self):
-        repo_name = self.get_repo_name()
+        repo_name = self.get_last_repo_name()
         path = self.user.user_dir + '/' + repo_name
-        print(path)
         return path
 
 
-    def get_current_repo(self):
+    def get_current_repo(self): #gets last repo object of current user
         username = self.user.username
-        name = self.get_repo_name()
+        name = self.get_last_repo_name()
         repo = self.user.github.get_repo(username + '/' + name)
         return repo
 
@@ -81,8 +83,7 @@ class Repository:
         with open(FILE_JSON_NAME, "w") as file:
             json.dump(records, file, indent=4)
 
-    def open_latest_project(self):
-        """ checks json file to find latest project and clones it"""
+    def open_latest_project(self): #clones last used project
         url_repo = self.get_last_repo_url()
         local_path = self.get_last_repo_path()
         repo = utils.clone(url_repo, local_path)
@@ -93,9 +94,8 @@ class Repository:
             name for name in os.listdir(self.user.user_dir)
             if os.path.isdir(os.path.join(self.user.user_dir, name))
         ]
-
         if len(project_dirs) < 2:
-            print("No other projects available.")
+            print("No other projects available locally.")
             return
 
         print("Choose a project:")
@@ -106,34 +106,35 @@ class Repository:
             index = int(input("Project: ")) - 1
             if index < 0 or index >= len(project_dirs):
                 print("Invalid option!")
-                self.choose_another_project()
+                return self.choose_another_project()
 
             chosen_project = project_dirs[index]
             self.save_latest_project(chosen_project)
             full_path = os.path.abspath(os.path.join(self.user.user_dir, chosen_project))
-
             print(f"Chosen project: {chosen_project}")
             print(f"Path: {full_path}")
-
         except ValueError:
             print("Invalid input.")
-            self.choose_another_project()
+            return self.choose_another_project()
 
 
 
     def create_new_repo(self):
         repo_name = input("Insert repo name: ")
+        repo_url = f"{self.user.user_url}{repo_name}"
         try:
             # create repository on git
             repo = self.user.github.get_user().create_repo(name=repo_name)
         except GithubException as e:
             print(f"Status: {e.status}, Error: ", e)
             if e.status == 422:
-                print(f"Repository already exists!")
+                print(f"Repository already exists!\nCloning existent repository instead:")
+                path_existent_repo=self.get_repo_path_from_name(repo_name)
+                utils.clone(repo_url,path_existent_repo)
+                self.save_latest_project(repo_name)
                 return
 
         # create directory in which the new repo will be cloned
-        repo_url = f"{self.user.user_url}{repo_name}"
         path = os.path.join(self.user.user_dir, repo_name)
         os.makedirs(path, exist_ok=True)
         # add READ ME
@@ -157,7 +158,7 @@ class Repository:
         print(f"File path: ", file_path)
         parts = os.path.normpath(file_path).split(os.sep)
 
-        idx = parts.index(self.get_repo_name())  # finds index of repo
+        idx = parts.index(self.get_last_repo_name())  # finds index of repo
         # builds github_path starting excluding repo dir
         github_path = os.path.join(*parts[idx + 1:]).replace("\\", "/")
 
@@ -171,7 +172,7 @@ class Repository:
                 print(f"File {file_name} already exists!")
 
     def delete_file(self):
-        self.user.get_git_remote_url(self.get_last_repo_path(),self.get_repo_name())
+        self.user.get_git_remote_url(self.get_last_repo_path(),self.get_last_repo_name())
         repo_path = self.get_last_repo_path()
         file_name = input("Input file name to delete: ")
         matches = []
@@ -189,7 +190,7 @@ class Repository:
         if len(matches) == 1:
             file_path = matches[0]
             print(f"File found at: {file_path}")
-        else:
+        else: # if more files with the same names are found it asks you to select the path
             print(f"Multiple files named {file_name} found:")
             for i, path in enumerate(matches):
                 print(f"[{i + 1}] {os.path.relpath(path, repo_path)}")
@@ -211,6 +212,7 @@ class Repository:
             print(f"Error : {e}")
 
     def save_file_changes(self):
+        self.user.get_git_remote_url(self.get_last_repo_path(), self.get_last_repo_name())
         repo_path = self.get_last_repo_path()
         commit_message = input("Input commit message: ")
         utils.push(repo_path, commit_message)
@@ -229,7 +231,7 @@ class Repository:
 
         parts = os.path.normpath(full_sub_path).split(os.sep)
 
-        idx = parts.index(self.get_repo_name())  # finds index of repo
+        idx = parts.index(self.get_last_repo_name())  # finds index of repo
         # gitignore file must be added since github doesn't see empty directories
         github_path = os.path.join(*parts[idx + 1:], ".gitignore").replace("\\", "/")
 
@@ -245,19 +247,19 @@ class Repository:
 
     def delete_subdirectory(self):
         # otherwise git will ask fro credentials before deleting the directory
-        self.user.get_git_remote_url(self.get_last_repo_path(),self.get_repo_name())
+        self.user.get_git_remote_url(self.get_last_repo_path(),self.get_last_repo_name())
         print("Select the number of the directory you want to delete: ")
         try:
             dir_path = self.find_directory('2')
         except FileNotFoundError as e:
-            print("No directories found:", e)
+            print("Error:", e)
             return
         # the path of the  directory you want to delete
         dub_dir_name = os.path.basename(os.path.normpath(dir_path))
         shutil.rmtree(dir_path, onerror=onerror)
         utils.push(self.get_last_repo_path(), "Removed dir " + dub_dir_name)
 
-    import os
+
 
     def find_directory(self, answer=None):
         repo_path = os.path.abspath(self.get_last_repo_path())

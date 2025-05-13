@@ -26,12 +26,6 @@ class User:
         subprocess.run(["git", "remote", "set-url", "origin", url], cwd=repo_path, check=True)
         return url
 
-    def is_user_folder_empty(self):
-        for root, dirs, files in os.walk(self.user_dir):
-            if files or dirs:
-                return False
-        return True
-
     def user_exit(self):
         shutil.rmtree(self.user_dir, onerror=onerror)
         self.github.close()
@@ -52,6 +46,6 @@ class User:
                     else:
                       return "first access"
         else:
-            print("json")
-            json.dumps([], indent=4)  # if json doesn't exist it creates it and returns first access
+
+            json.dumps([], indent=4)  # if json doesn't exist
             return "first access"
