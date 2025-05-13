@@ -1,24 +1,20 @@
 # one_week_test
 Installation and Setup Guide
-Verify that the virtual environment is activated:
-Make sure the virtual environment is activated before proceeding with the installation of dependencies.
 
-On Windows:
+Assicurati che l’ambiente virtuale sia attivato prima di procedere con l’installazione delle dipendenze.
+ Windows:
 `.\venv\Scripts\activate`
-
-On macOS/Linux:
+ macOS/Linux:
 `source venv/bin/activate`
 
-Check the Python interpreter:
-Ensure that the selected Python interpreter is the one from the virtual environment (venv). You can verify this in your IDE settings or by using the command:
+Verifica che l’interprete Python selezionato sia quello dell’ambiente virtuale (venv).
+Puoi controllarlo dalle impostazioni del tuo IDE oppure tramite il comando:
 `which python`
-It should point to the venv folder.
 
-Install dependencies:
-Once the virtual environment is activated, install all required dependencies by running:
+Una volta attivato l’ambiente virtuale, installa le dipendenze richieste con:
 `pip install -r requirements.txt`
 
-Create .env file with your Github token:
+Crea un file .env con il token:
 `GITHUB_TOKEN=your_token`
 
 
