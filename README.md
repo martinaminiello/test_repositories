@@ -30,4 +30,11 @@ Once the virtual environment is activated, install all required dependencies by 
 bash
 Copy
 Edit
+
+Create .env file with your Github token:
+bash
+Copy
+Edit
+GITHUB_TOKEN=your_token
+
 pip install -r requirements.txt
