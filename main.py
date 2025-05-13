@@ -12,8 +12,8 @@ def print_main_menu():
     print("[3] add new file to the repository")
     print("[4] delete file")
     print("[5] save changes to github")
-    print("[6] create new repository")
-    print("[7] choose another project")
+    print("[6] create new local project ")
+    print("[7] choose another local project")
     print("[8] exit")
 
 

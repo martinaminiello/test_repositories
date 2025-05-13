@@ -198,11 +198,11 @@ class Repository:
                 choice = int(input("Select file number to delete: ")) - 1
                 if choice < 0 or choice >= len(matches):
                     print("Invalid choice.")
-                    return
+                    return self.delete_file()
                 file_path = matches[choice]
             except ValueError:
                 print("Invalid input.")
-                return
+                return self.delete_file()
 
         try:
             os.remove(file_path)

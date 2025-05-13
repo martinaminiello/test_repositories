@@ -37,7 +37,7 @@ class User:
                 if file.read(2) != '[]':
                     file.seek(0)
                     records = json.load(file)
-                    print(records)
+
 
                     for record in records:
 
